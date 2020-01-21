@@ -10,12 +10,55 @@ import Foundation
 import FirebaseAuth
 import Firebase
 import ProgressHUD
+import CoreLocation
+import GeoFire
 
 class UserApi {
     
     var currentUserId: String{
         return Auth.auth().currentUser != nil ? Auth.auth().currentUser!.uid : ""
     }
+    func signUpAddLocation(withUsername username: String, email: String, password: String, image: UIImage?,
+                           location: CLLocation, onSuccess: @escaping() -> Void, onError: @escaping(_ errorMessage: String) -> Void){
+        
+        guard let imageSelected = image else{
+            ProgressHUD.showError(ERROR_EMPTY_PHOTO)
+            return
+        }
+        guard let imageData = imageSelected.jpegData(compressionQuality: 0.4) else{
+            print("signupButtonDidTapped : no ImageData")
+            return
+        }
+        
+        Auth.auth().createUser(withEmail: email, password: password) { (authDataResult, error) in
+            if error != nil{
+                ProgressHUD.showError(error!.localizedDescription)
+                return
+            }
+            if let authData = authDataResult{
+                let dictionary: Dictionary<String, Any> = [
+                    UID : authData.user.uid,
+                    EMAIL : authData.user.email!,
+                    USERNAME : username,
+                    PROFILE_IMAGE_URL : "",
+                    STATUS : "Wellcome to DippingSauce"
+                ]
+                let geoFireRef = Ref().databaseGeo
+                let geoFire = GeoFire(firebaseRef: geoFireRef)
+                geoFire.setLocation(location, forKey: Api.User.currentUserId)
+                
+                let storageProfile = Ref().storageSpecificProfile(uid: authData.user.uid)
+                let metaData = StorageMetadata()
+                metaData.contentType = "image/jpg"
+                StorageService.savePhoto(username: username, uid: authData.user.uid, data: imageData, metaData: metaData, storageProfileRef: storageProfile, dictionary: dictionary, onSuccess: {
+                    onSuccess()
+                }) { (onErrorMessage) in
+                     onError(onErrorMessage)
+                }
+            }
+        }
+    }
+    
     
     func signUp(withUsername username: String, email: String, password: String, image: UIImage?,
                 onSuccess: @escaping() -> Void, onError: @escaping(_ errorMessage: String) -> Void){
@@ -54,6 +97,7 @@ class UserApi {
             }
         }
     }
+    
     func signIn(email: String, password: String,
                 onSuccess: @escaping() -> Void, onError: @escaping(_ errorMessage: String) -> Void){
         Auth.auth().signIn(withEmail: email, password: password) { (authDataResult, error) in

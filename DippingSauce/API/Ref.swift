@@ -33,6 +33,7 @@ let IS_ONLINE = "isOnline"
 let FEED_MESSAGES = "feedMessages"
 let ISMALE = "isMale"
 let AGE = "age"
+let FBPROFILE = "public_profile"
 let INITIAL_DISTANCE = Double(20)
 let CURRENT_LOCATION_LATITUDE = "current_location_latitude"
 let CURRENT_LOCATION_LONGITUDE = "current_location_longitude"

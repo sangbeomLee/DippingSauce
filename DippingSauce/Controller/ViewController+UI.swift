@@ -68,7 +68,7 @@ extension ViewController{
     }
     @objc func facebookButtonDidTapped(){
         let fbLoginManager = LoginManager()
-        fbLoginManager.logIn(permissions: ["public_profile", "email"], from: self) { (result, error) in
+        fbLoginManager.logIn(permissions: [FBPROFILE, EMAIL], from: self) { (result, error) in
             if let error = error{
                 ProgressHUD.showError(error.localizedDescription)
                 return
@@ -89,8 +89,8 @@ extension ViewController{
                     let dict: Dictionary<String, Any> = [
                         UID : authData.user.uid,
                         EMAIL : authData.user.email!,
-                        USERNAME : authData.user.displayName,
-                        PROFILE_IMAGE_URL : authData.user.photoURL?.absoluteString,
+                        USERNAME : authData.user.displayName as Any,
+                        PROFILE_IMAGE_URL : authData.user.photoURL?.absoluteString as Any,
                         STATUS : "Wellcome to DippingSauce"
                     ]
                     Ref().databaseSpecificUser(uid: authData.user.uid).updateChildValues(dict) { (error, ref) in

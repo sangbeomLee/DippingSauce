@@ -108,7 +108,6 @@ extension SignUpViewController{
             manager.startUpdatingLocation()
         }
     }
-    
     func signUp(onSuccess: @escaping() -> Void, onError: @escaping(_ errorMessage: String) -> Void){
         // send to firebase
         let email = emailTextField.text!
@@ -117,6 +116,33 @@ extension SignUpViewController{
         let image = avatarImageView.image
         ProgressHUD.show("Loading..")
         Api.User.signUp(withUsername: userName, email: email, password: password, image: image, onSuccess: {
+            ProgressHUD.dismiss()
+            onSuccess()
+        }) { (errorMessage) in
+            onError(errorMessage)
+        }
+    }
+    
+    func signUpAddLocation(location: CLLocation?, onSuccess: @escaping() -> Void, onError: @escaping(_ errorMessage: String) -> Void){
+        // send to firebase
+        let email = emailTextField.text!
+        let password = passwordTextField.text!
+        let userName = fullNameTextField.text!
+        let image = avatarImageView.image
+        
+        guard let location = location else{
+            ProgressHUD.show("Loading..")
+            Api.User.signUp(withUsername: userName, email: email, password: password, image: image, onSuccess: {
+                ProgressHUD.dismiss()
+                onSuccess()
+            }) { (errorMessage) in
+                onError(errorMessage)
+            }
+            return
+        }
+        
+        ProgressHUD.show("Loading..")
+        Api.User.signUpAddLocation(withUsername: userName, email: email, password: password, image: image, location: location, onSuccess: {
             ProgressHUD.dismiss()
             onSuccess()
         }) { (errorMessage) in
@@ -147,11 +173,13 @@ extension SignUpViewController: UIImagePickerControllerDelegate, UINavigationCon
 }
 
 extension SignUpViewController: CLLocationManagerDelegate{
+    // ChangeAuthorization
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         if (status == .authorizedAlways) || (status == .authorizedWhenInUse){
             manager.startUpdatingLocation()
         }
     }
+    // error
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         ProgressHUD.showError(error.localizedDescription)
     }

@@ -9,7 +9,6 @@
 import UIKit
 import ProgressHUD
 import CoreLocation
-import GeoFire
 
 class SignUpViewController: UIViewController {
     
@@ -28,8 +27,7 @@ class SignUpViewController: UIViewController {
     let manager = CLLocationManager()
     var userLat = ""
     var userLong = ""
-    var geoFire: GeoFire!
-    var geoFireRef: DatabaseReference!
+    var location: CLLocation?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -62,14 +60,13 @@ class SignUpViewController: UIViewController {
             self.userLong = userLong
         }
         
-        self.signUp(onSuccess: {
-            if !self.userLat.isEmpty && !self.userLong.isEmpty {
-                let location: CLLocation = CLLocation(latitude: CLLocationDegrees(Double(self.userLat)!), longitude: CLLocationDegrees(Double(self.userLong)!))
-                // send location to firebase
-                self.geoFireRef = Ref().databaseGeo
-                self.geoFire = GeoFire(firebaseRef: self.geoFireRef)
-                self.geoFire.setLocation(location, forKey: Api.User.currentUserId)
-            }
+        // 비어있는지 확인
+        if !userLat.isEmpty && !userLong.isEmpty{
+            // 로그인 표시
+            self.location = CLLocation(latitude: CLLocationDegrees(Double(userLat)!), longitude: CLLocationDegrees(Double(userLong)!))
+        }
+        
+        self.signUpAddLocation(location: location, onSuccess: {
             Api.User.isOnline(bool: true)
             (UIApplication.shared.connectedScenes.first?.delegate as! SceneDelegate).ConfigureInitialViewController()
         }) { (errorMessage) in
